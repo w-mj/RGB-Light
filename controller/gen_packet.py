@@ -1,7 +1,8 @@
 import socket
 import struct
 
-addr = "192.168.222.1"
+addr = "192.168.101.239"
+# addr = "192.168.222.1"
 port = 4617
 
 TAG_HELLO=1

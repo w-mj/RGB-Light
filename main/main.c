@@ -18,7 +18,7 @@
 
 void communicate_task(void *args);
 
-#define EXAMPLE_ESP_MAXIMUM_RETRY  10
+#define EXAMPLE_ESP_MAXIMUM_RETRY 5
 
 struct {
     char sta_ssid[32];
@@ -51,8 +51,9 @@ static void event_handler(void* arg, esp_event_base_t event_base,
             wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*) event_data;
             ESP_LOGE(TAG, "Disconnect reason **%s**: %d", disconnected->ssid, disconnected->reason);
             s_retry_num++;
-            esp_wifi_stop();
-            esp_wifi_start();
+            esp_wifi_connect();
+            // esp_wifi_stop();
+            // esp_wifi_start();
             ESP_LOGI(TAG, "retry to connect to the AP %d/%d", s_retry_num, EXAMPLE_ESP_MAXIMUM_RETRY);
         } else {
             // 重试三次失败，启动AP模式
@@ -86,7 +87,8 @@ wifi_ap_record_t ap_info[32];
 void startSta() {
     ESP_ERROR_CHECK(esp_netif_init());
 
-    esp_netif_create_default_wifi_sta();
+    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    assert(sta_netif);
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -94,12 +96,18 @@ void startSta() {
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, NULL));
 
-    wifi_config_t cf1;
+    wifi_config_t cf1 = {
+        // .sta = {
+        //     .ssid = "TP-LINK_DE06FA",
+        //     .password = "G313G313G313"
+        // }
+    };
     strcpy((char*)cf1.sta.ssid, config.sta_ssid);
-    strcpy((char*)cf1.sta.password, config.sta_password);
+    memcpy(cf1.sta.password, config.sta_password, 32);
     cf1.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
-    cf1.sta.pmf_cfg.capable = true;
-    cf1.sta.pmf_cfg.required = false;
+    // cf1.sta.pmf_cfg.capable = true;
+    // cf1.sta.pmf_cfg.required = false;
+
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cf1) );
@@ -110,7 +118,7 @@ void startSta() {
     uint16_t ap_count = 0;
     memset(ap_info, 0, sizeof(ap_info));
 
-    esp_wifi_scan_start(NULL, true);
+    ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
     ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
@@ -266,6 +274,7 @@ void app_main(void)
     if (ret == ESP_OK) {
         length = 32;
         ret = nvs_get_str(nvs_handle, "sta_password", config.sta_password, &length);
+        config.sta_password[length] = 0;
         if (ret != ESP_OK) {
             // config.sta_ssid[0] = 0;
         }
@@ -277,7 +286,6 @@ void app_main(void)
         startAp();
     } else {
         ESP_LOGI(TAG, "Get wifi info ssid:%s, password:%s", config.sta_ssid, config.sta_password);
-        // wifi_scan();
         startSta();
     }
 
