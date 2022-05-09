@@ -23,6 +23,7 @@
 #define TAG_SET_EFFECT 7
 #define TAG_RESTART 8
 #define TAG_NVS_COMMIT 9
+#define TAG_GET_INFO 10
 
 #define LOGI(...) ESP_LOGI("COMM", __VA_ARGS__)
 #define LOGE(...) ESP_LOGE("COMM", __VA_ARGS__)
@@ -31,6 +32,13 @@
  * TAG_SET: 用于设置变量。
  * 
  * */
+
+ char light_data[128 * 1024] = {};
+
+
+ struct {
+     size_t free_heap_size;
+ } deviceInfo;
 
 
 #define recv_or_end(sock, ptr, len) do {int __n_; __n_ = recv(sock, ptr, len, MSG_WAITALL); if (__n_ < len) { goto end; }} while (0)
@@ -86,6 +94,13 @@ void communicate_task(void *args) {
                 }
                 break;
             }
+            case TAG_GET_INFO: {
+                deviceInfo.free_heap_size = esp_get_free_heap_size();
+                LOGI("free heap size %u", deviceInfo.free_heap_size);
+                light_data[deviceInfo.free_heap_size % 1024] = deviceInfo.free_heap_size;
+                send(sock, &deviceInfo, sizeof(deviceInfo), MSG_WAITALL);
+                break;
+            }
             default: {
                 LOGE("Unknown tag %d", tag);
                 break;
@@ -93,7 +108,7 @@ void communicate_task(void *args) {
         }
     }
 
-    size_t maxv = 32;
+    // size_t maxv = 32;
 end:
     LOGI("Connection close");
     if (nvs_handle != -1) {

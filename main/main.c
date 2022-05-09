@@ -39,6 +39,8 @@ void wifi_scan(void);
 void print_auth_mode(int authmode);
 void print_cipher_type(int pairwise_cipher, int group_cipher);
 
+void test_led(void *);
+
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
@@ -83,7 +85,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 }
 
 
-wifi_ap_record_t ap_info[32];
+// wifi_ap_record_t ap_info[32];
 void startSta() {
     ESP_ERROR_CHECK(esp_netif_init());
 
@@ -114,23 +116,23 @@ void startSta() {
     ESP_ERROR_CHECK(esp_wifi_start() );
 
     return;
-    uint16_t number = 32;
-    uint16_t ap_count = 0;
-    memset(ap_info, 0, sizeof(ap_info));
+    // uint16_t number = 32;
+    // uint16_t ap_count = 0;
+    // memset(ap_info, 0, sizeof(ap_info));
 
-    ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
-    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
-    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
-    ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
-    for (int i = 0; (i < 32) && (i < ap_count); i++) {
-        ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
-        ESP_LOGI(TAG, "RSSI \t\t%d", ap_info[i].rssi);
-        print_auth_mode(ap_info[i].authmode);
-        if (ap_info[i].authmode != WIFI_AUTH_WEP) {
-            print_cipher_type(ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
-        }
-        ESP_LOGI(TAG, "Channel \t\t%d\n", ap_info[i].primary);
-    }
+    // ESP_ERROR_CHECK(esp_wifi_scan_start(NULL, true));
+    // ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+    // ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+    // ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
+    // for (int i = 0; (i < 32) && (i < ap_count); i++) {
+    //     ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
+    //     ESP_LOGI(TAG, "RSSI \t\t%d", ap_info[i].rssi);
+    //     print_auth_mode(ap_info[i].authmode);
+    //     if (ap_info[i].authmode != WIFI_AUTH_WEP) {
+    //         print_cipher_type(ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
+    //     }
+    //     ESP_LOGI(TAG, "Channel \t\t%d\n", ap_info[i].primary);
+    // }
 }
 
 void hexToChar2(uint8_t hex, char *str) {
@@ -291,5 +293,5 @@ void app_main(void)
 
     ESP_LOGI(TAG, "START Socket");
     xTaskCreate(tcp_server_task, "tcp_server", 4096, NULL, 5, NULL);
-
+    xTaskCreate(test_led, "test_led", 4096, NULL, 5, NULL);
 }
