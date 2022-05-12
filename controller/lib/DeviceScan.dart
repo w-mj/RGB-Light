@@ -19,8 +19,14 @@ class Device {
   String ip;
   int port;
   String name = "";
+  int ledNum = 60;
   Device(this.ip, this.port) {
-    name = ip;
+    name = "name$ip";
+  }
+
+  @override
+  String toString() {
+    return "$name $ip:$port $ledNum";
   }
 }
 
@@ -29,37 +35,85 @@ class DeviceScanState extends State<DeviceScan> {
   Device? currentDevice;
   String hint = "请点击扫描";
 
+  late TextEditingController nameController;
+  late TextEditingController ledNumController;
+
+  DeviceScanState() {
+    nameController = TextEditingController(text: currentDevice?.name);
+    ledNumController =
+        TextEditingController(text: currentDevice?.ip.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Flex(
-      direction: Axis.horizontal,
+    return Column(
       children: [
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 20)),
-        Expanded(
-          flex: 1,
-          child: (() {
-            if (devices.isNotEmpty) {
-              // currentDevice = devices[0];
-              return DropdownButton<Device>(
-                  value: currentDevice,
-                  items: devices
-                      .map((e) => DropdownMenuItem<Device>(
-                          value: e, child: Text(e.name)))
-                      .toList(),
-                  onChanged: (Device? value) {
-                    log(value!.name);
-                    setState(() {
-                      currentDevice = value;
-                    });
-                  });
-            } else {
-              return Text(hint);
-            }
-          }()),
+        Flex(
+          direction: Axis.horizontal,
+          children: [
+            Expanded(
+              flex: 1,
+              child: (() {
+                if (devices.isNotEmpty) {
+                  // currentDevice = devices[0];
+                  return DropdownButton<Device>(
+                      value: currentDevice,
+                      items: devices
+                          .map((e) => DropdownMenuItem<Device>(
+                              value: e, child: Text(e.name)))
+                          .toList(),
+                      onChanged: (Device? value) {
+                        log(value!.name);
+                        setState(() {
+                          currentDevice = value;
+                          nameController.text = currentDevice!.name;
+                          ledNumController.text =
+                              currentDevice!.ledNum.toString();
+                        });
+                      });
+                } else {
+                  return Text(hint);
+                }
+              }()),
+            ),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 10)),
+            ElevatedButton(onPressed: getIps, child: const Text("扫描")),
+          ],
         ),
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 10)),
-        ElevatedButton(onPressed: getIps, child: const Text("扫描")),
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 20))
+        if (currentDevice != null)
+          Form(
+            child: Column(children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                    labelText: "名称", hintText: "为这盏七彩祥灯起个名字"),
+              ),
+              TextFormField(
+                controller: ledNumController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                    labelText: "灯珠数量", hintText: "有几个发光LED"),
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 28.0),
+                  child: Row(children: <Widget>[
+                    Expanded(
+                      child: ElevatedButton(
+                        child: const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text("确认"),
+                        ),
+                        onPressed: () {
+                          currentDevice!.name = nameController.text;
+                          currentDevice!.ledNum =
+                              int.parse(ledNumController.text);
+                          log(currentDevice.toString());
+                        },
+                      ),
+                    ),
+                  ]))
+            ]),
+          )
       ],
     );
   }
@@ -79,6 +133,8 @@ class DeviceScanState extends State<DeviceScan> {
           setState(() {
             devices.add(Device(event.ip, event.port));
             currentDevice = devices[0];
+            nameController.text = currentDevice!.name;
+            ledNumController.text = currentDevice!.ledNum.toString();
           });
         }
       }, onDone: () {
@@ -92,8 +148,6 @@ class DeviceScanState extends State<DeviceScan> {
         setState(() {
           if (devices.isEmpty) {
             hint = "无设备";
-          } else {
-            currentDevice = devices[0];
           }
         });
       }

@@ -30,24 +30,27 @@ class MainPage extends StatefulWidget {
 class MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
-    return Flex(
-      direction: Axis.horizontal,
-      children: [
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              DeviceScan(),
-              Text("slect 2"),
-              Text("slect 4"),
-            ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Flex(
+        direction: Axis.horizontal,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                DeviceScan(),
+                Text("slect 2"),
+                Text("slect 4"),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          flex: 2,
-          child: const Image(image: AssetImage('assets/flame.gif')),
-        )
-      ],
+          Expanded(
+            flex: 2,
+            child: const Image(image: AssetImage('assets/flame.gif')),
+          )
+        ],
+      ),
     );
   }
 }
