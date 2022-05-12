@@ -1,3 +1,4 @@
+import 'package:controller/DeviceScan.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -27,14 +28,6 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
-  List<DropdownMenuItem<String>> sortItems = [];
-  String deviceListValue = '未选择';
-  MainPageState() : super() {
-    sortItems.add(DropdownMenuItem(value: '未选择', child: Text('未选择')));
-    sortItems.add(DropdownMenuItem(value: '设备1', child: Text('设备1')));
-    sortItems.add(DropdownMenuItem(value: '设备2', child: Text('设备2')));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Flex(
@@ -44,27 +37,7 @@ class MainPageState extends State<MainPage> {
           flex: 1,
           child: Column(
             children: [
-              Flex(
-                direction: Axis.horizontal,
-                children: [
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 20)),
-                  Expanded(
-                    flex: 1,
-                    child: DropdownButton(
-                      value: deviceListValue,
-                      items: sortItems,
-                      onChanged: (value) {
-                        setState(() {
-                          deviceListValue = value.toString();
-                        });
-                      },
-                    ),
-                  ),
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 10)),
-                  ElevatedButton(onPressed: () {}, child: Text("搜索")),
-                  const Padding(padding: EdgeInsets.symmetric(horizontal: 20))
-                ],
-              ),
+              DeviceScan(),
               Text("slect 2"),
               Text("slect 4"),
             ],
