@@ -3,9 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:network_tools/network_tools.dart';
-import 'package:tcp_scanner/tcp_scanner.dart';
 
-const commPort = 4617;
+const commPort = 22;
 
 class DeviceScan extends StatefulWidget {
   const DeviceScan({Key? key}) : super(key: key);
@@ -26,14 +25,9 @@ class Device {
 }
 
 class DeviceScanState extends State<DeviceScan> {
-  List<DropdownMenuItem<String>> dropDownList = [];
   List<Device> devices = [];
-  String deviceListValue = "default";
-
-  DeviceScanState() {
-    dropDownList
-        .add(const DropdownMenuItem(value: "default", child: Text("未选择")));
-  }
+  Device? currentDevice;
+  String hint = "请点击扫描";
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +37,25 @@ class DeviceScanState extends State<DeviceScan> {
         const Padding(padding: EdgeInsets.symmetric(horizontal: 20)),
         Expanded(
           flex: 1,
-          child: DropdownButton(
-            value: deviceListValue,
-            items: dropDownList,
-            onChanged: (value) {
-              setState(() {
-                deviceListValue = value.toString();
-              });
-            },
-          ),
+          child: (() {
+            if (devices.isNotEmpty) {
+              // currentDevice = devices[0];
+              return DropdownButton<Device>(
+                  value: currentDevice,
+                  items: devices
+                      .map((e) => DropdownMenuItem<Device>(
+                          value: e, child: Text(e.name)))
+                      .toList(),
+                  onChanged: (Device? value) {
+                    log(value!.name);
+                    setState(() {
+                      currentDevice = value;
+                    });
+                  });
+            } else {
+              return Text(hint);
+            }
+          }()),
         ),
         const Padding(padding: EdgeInsets.symmetric(horizontal: 10)),
         ElevatedButton(onPressed: getIps, child: const Text("扫描")),
@@ -66,22 +70,15 @@ class DeviceScanState extends State<DeviceScan> {
     log("start scan subnet $subnet");
     final stream =
         HostScanner.discover(subnet, firstSubnet: 1, lastSubnet: 255);
-
     stream.listen((host) {
       log("start scan port on ${host.ip}");
       PortScanner.discover(host.ip, startPort: commPort, endPort: commPort)
           .listen((event) {
         if (event.isOpen) {
           log("found $event ${event.ip} ${event.port}");
-          devices.add(Device(event.ip, event.port));
           setState(() {
-            dropDownList
-                .add(DropdownMenuItem(value: event.ip, child: Text(event.ip)));
-            if (dropDownList.length == 2 &&
-                dropDownList[0].value == 'default') {
-              deviceListValue = event.ip;
-              dropDownList.removeAt(0);
-            }
+            devices.add(Device(event.ip, event.port));
+            currentDevice = devices[0];
           });
         }
       }, onDone: () {
@@ -92,22 +89,21 @@ class DeviceScanState extends State<DeviceScan> {
       runninngTask--;
       if (runninngTask == 0) {
         log('all task finished');
-        if (dropDownList.length == 1 && dropDownList[0].value == 'default') {
-          setState(() {
-            dropDownList[0] =
-                const DropdownMenuItem(value: "default", child: Text("无设备"));
-          });
-        }
+        setState(() {
+          if (devices.isEmpty) {
+            hint = "无设备";
+          } else {
+            currentDevice = devices[0];
+          }
+        });
       }
     });
   }
 
   void getIps() {
     setState(() {
-      dropDownList.clear();
-      dropDownList
-          .add(const DropdownMenuItem(value: "default", child: Text("正在扫描")));
-      deviceListValue = 'default';
+      devices.clear();
+      hint = "正在扫描...";
     });
     devices.clear();
     NetworkInterface.list(type: InternetAddressType.IPv4).then((value) {
@@ -124,5 +120,6 @@ class DeviceScanState extends State<DeviceScan> {
         }
       }
     });
+    log("quit getIps");
   }
 }
