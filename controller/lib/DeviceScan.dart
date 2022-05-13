@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:network_tools/network_tools.dart';
 
@@ -121,18 +122,13 @@ class DeviceScanState extends State<DeviceScan> {
     log("start scan subnet $subnet");
     final stream =
         HostScanner.discover(subnet, firstSubnet: 1, lastSubnet: 255);
-    stream.listen((host) {
+    stream.listen((host) async {
       log("start scan port on ${host.ip}");
       PortScanner.discover(host.ip, startPort: commPort, endPort: commPort)
-          .listen((event) {
+          .listen((event) async {
         if (event.isOpen) {
           log("found $event ${event.ip} ${event.port}");
-          setState(() {
-            devices.add(Device(event.ip, event.port));
-            currentDevice = devices[0];
-            nameController.text = currentDevice!.name;
-            ledNumController.text = currentDevice!.ledNum.toString();
-          });
+          devices.add(Device(event.ip, event.port));
         }
       }, onDone: () {
         log('scan port on ${host.ip} finish');
@@ -145,6 +141,10 @@ class DeviceScanState extends State<DeviceScan> {
         setState(() {
           if (devices.isEmpty) {
             hint = "无设备";
+          } else {
+            currentDevice = devices[0];
+            nameController.text = currentDevice!.name;
+            ledNumController.text = currentDevice!.ledNum.toString();
           }
         });
       }
@@ -153,11 +153,12 @@ class DeviceScanState extends State<DeviceScan> {
 
   void getIps() {
     setState(() {
+      currentDevice = null;
       devices.clear();
       hint = "正在扫描...";
     });
     devices.clear();
-    NetworkInterface.list(type: InternetAddressType.IPv4).then((value) {
+    NetworkInterface.list(type: InternetAddressType.IPv4).then((value) async {
       Set<String> networks = <String>{};
       for (var element in value) {
         for (var addr in element.addresses) {

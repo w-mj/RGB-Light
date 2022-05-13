@@ -1,4 +1,5 @@
 import 'package:controller/DeviceScan.dart';
+import 'package:controller/EffectEditor.dart';
 import 'package:controller/EffectList.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
+  const MainPage({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return MainPageState();
@@ -48,7 +51,7 @@ class MainPageState extends State<MainPage> {
           ),
           const Expanded(
             flex: 2,
-            child: Image(image: AssetImage('assets/flame.gif')),
+            child: EffectEditor(),
           )
         ],
       ),
