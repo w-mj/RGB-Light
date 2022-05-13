@@ -1,4 +1,5 @@
 import 'package:controller/DeviceScan.dart';
+import 'package:controller/EffectList.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -37,17 +38,17 @@ class MainPageState extends State<MainPage> {
         children: [
           Expanded(
             flex: 1,
-            child: Column(
-              children: [
+            child: Flex(
+              direction: Axis.vertical,
+              children: const [
                 DeviceScan(),
-                Text("slect 2"),
-                Text("slect 4"),
+                Expanded(flex: 1, child: EffectList())
               ],
             ),
           ),
-          Expanded(
+          const Expanded(
             flex: 2,
-            child: const Image(image: AssetImage('assets/flame.gif')),
+            child: Image(image: AssetImage('assets/flame.gif')),
           )
         ],
       ),

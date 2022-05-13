@@ -94,24 +94,21 @@ class DeviceScanState extends State<DeviceScan> {
                 decoration: const InputDecoration(
                     labelText: "灯珠数量", hintText: "有几个发光LED"),
               ),
-              Padding(
-                  padding: const EdgeInsets.only(top: 28.0),
-                  child: Row(children: <Widget>[
-                    Expanded(
-                      child: ElevatedButton(
-                        child: const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text("确认"),
-                        ),
-                        onPressed: () {
-                          currentDevice!.name = nameController.text;
-                          currentDevice!.ledNum =
-                              int.parse(ledNumController.text);
-                          log(currentDevice.toString());
-                        },
-                      ),
+              Row(children: <Widget>[
+                Expanded(
+                  child: ElevatedButton(
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text("确认"),
                     ),
-                  ]))
+                    onPressed: () {
+                      currentDevice!.name = nameController.text;
+                      currentDevice!.ledNum = int.parse(ledNumController.text);
+                      log(currentDevice.toString());
+                    },
+                  ),
+                ),
+              ])
             ]),
           )
       ],
