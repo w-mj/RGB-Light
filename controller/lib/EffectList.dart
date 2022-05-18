@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EffectList extends StatefulWidget {
   const EffectList({super.key});
@@ -14,8 +15,14 @@ class EffectList extends StatefulWidget {
 class EffectListState extends State<EffectList> {
   List<String> effects = ["Effect1"];
 
+  Future<void> loadEffects() async {
+    final dirName = await getApplicationDocumentsDirectory();
+    log("working dir $dirName");
+  }
+
   @override
   Widget build(BuildContext context) {
+    loadEffects();
     return Flex(
       direction: Axis.vertical,
       children: [

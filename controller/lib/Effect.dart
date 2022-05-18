@@ -57,18 +57,19 @@ Color hsvToRgb(double H, double S, double V) {
 }
 
 class Effect {
+  String name;
   int time; // 持续时间
   int fps;
   int ledNum;
 
   List<List<Color>> data = [];
 
-  Effect(this.time, this.fps, this.ledNum);
+  Effect(this.name, this.time, this.fps, this.ledNum);
 }
 
 class EffectBuilder {
   static Effect flow() {
-    Effect effect = Effect(10, 12, 60);
+    Effect effect = Effect("flow", 10, 12, 60);
     for (int i = 0; i < effect.time * effect.fps; i++) {
       List<Color> tmp =
           List.filled(effect.ledNum, const Color.fromARGB(0, 255, 255, 255));
